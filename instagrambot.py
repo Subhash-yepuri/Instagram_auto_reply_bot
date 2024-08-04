@@ -5,10 +5,14 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
-import subhash
+import userdetails
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
-from genai1 import reply
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+import re
+from generativeai import reply
 
 
 options=webdriver.ChromeOptions()
@@ -22,6 +26,9 @@ driver.get('https://www.instagram.com/direct/inbox/')
 
 actionchain=ActionChains(driver)
 
+
+def remove_non_bmp(text):
+    return re.sub(r'[^\u0000-\uFFFF]', '', text)
 
 def login(username,password):
     driver.find_element(By.NAME,'username').send_keys(username)
@@ -67,9 +74,10 @@ def check_unseen_messages():
     return unseen_msgs_list    
 
 def read_chat():
-
-    sender_msgs=driver.find_elements(By.CSS_SELECTOR,'span[class="x193iq5w xeuugli x13faqbe x1vvkbs xlh3980 xvmahel x1n0sxbx x1lliihq x1s928wv xhkezso x1gmr53x x1cpjm7i x1fgarty x1943h6x x4zkp8e x3x7a5m x6prxxf xvq8zen xo1l8bm xzsf02u"]>div')
-    total_msgs=driver.find_elements(By.CSS_SELECTOR,"div[role='button']>div>div>div>div>div>span>div")
+    sender_msgs=WebDriverWait(driver,20).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,'span[class="x193iq5w xeuugli x13faqbe x1vvkbs xlh3980 xvmahel x1n0sxbx x1lliihq x1s928wv xhkezso x1gmr53x x1cpjm7i x1fgarty x1943h6x x4zkp8e x3x7a5m x6prxxf xvq8zen xo1l8bm xzsf02u"]>div')))
+    # sender_msgs=driver.find_elements(By.CSS_SELECTOR,'span[class="x193iq5w xeuugli x13faqbe x1vvkbs xlh3980 xvmahel x1n0sxbx x1lliihq x1s928wv xhkezso x1gmr53x x1cpjm7i x1fgarty x1943h6x x4zkp8e x3x7a5m x6prxxf xvq8zen xo1l8bm xzsf02u"]>div')
+    total_msgs=WebDriverWait(driver,20).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div[role='button']>div>div>div>div>div>span>div")))
+    # total_msgs=driver.find_elements(By.CSS_SELECTOR,"div[role='button']>div>div>div>div>div>span>div")
 
     if len(sender_msgs)>100:
         sender_msgs=sender_msgs[-100:]
@@ -147,34 +155,61 @@ if __name__=='__main__':
                     message1=read_chat()  
                     time.sleep(2)
                     reply_message1=reply(message1)
-                    driver.find_element(By.XPATH,'/html/body/div[2]/div/div/div[2]/div/div/div[1]/div[1]/div[1]/section/main/section/div/div/div/div[1]/div/div[2]/div/div/div/div/div/div/div[2]/div/div/div[2]/div/div/div[2]/div/div[1]/p').send_keys(reply_message1)
+                    print(reply_message1)
+                    (WebDriverWait(driver, 20).until(
+                                    EC.presence_of_element_located((By.XPATH,'/html/body/div[2]/div/div/div[2]/div/div/div[1]/div[1]/div[1]/section/main/section/div/div/div/div[1]/div/div[2]/div/div/div/div/div/div/div[2]/div/div/div[2]/div/div/div[2]/div/div[1]/p'))
+                                    )).send_keys(reply_message1)
                     time.sleep(2)
                     actionchain.send_keys(Keys.ENTER).perform()
                     # driver.find_element(By.XPATH,'/html/body/div[2]/div/div/div[2]/div/div/div[1]/div[1]/div[1]/section/main/section/div/div/div/div[1]/div/div[2]/div/div/div/div/div/div/div[2]/div/div/div[2]/div/div/div[3]').click()
-                    sent_msg_selector='div > div > div.x9f619.x1n2onr6.x1ja2u2z > div > div > div.x78zum5.xdt5ytf.x1t2pt76.x1n2onr6.x1ja2u2z.x10cihs4 > div.x9f619.xvbhtw8.x78zum5.x168nmei.x13lgxp2.x5pf9jr.xo71vjh.x1uhb9sk.x1plvlek.xryxfnj.x1c4vz4f.x2lah0s.xdt5ytf.xqjyukv.x1qjc9v5.x1oa3qoh.x1qughib > div.x1gryazu.xh8yej3.x10o80wk.x14k21rp.x1v4esvl.x8vgawa > section > main > section > div > div > div > div.xjp7ctv > div > div.x9f619.x1n2onr6.x1ja2u2z.x78zum5.xdt5ytf.x193iq5w.xeuugli.x1r8uery.x1iyjqo2.xs83m0k > div > div > div.x1ja2u2z.x9f619.x78zum5.xdt5ytf.x193iq5w.x1l7klhg.x1iyjqo2.xs83m0k.x2lwn1j.xcrg951.x6prxxf.x6ikm8r.x10wlt62.x1n2onr6.xh8yej3 > div > div > div > div.x1uvtmcs.x4k7w5x.x1h91t0o.x1beo9mf.xaigb6o.x12ejxvf.x3igimt.xarpa2k.xedcshv.x1lytzrv.x1t2pt76.x7ja8zs.x1n2onr6.x1qrby5j.x1jfb8zj > div > div > div.x78zum5.x1r8uery.xdt5ytf.x1iyjqo2.xmz0i5r.x6ikm8r.x10wlt62.x1n2onr6 > div > div > div > div > div > div > div:nth-child(3) > div>div:nth-last-child(2)'
+                    sent_msg_selector='//div/div/div[2]/div/div/div[1]/div[1]/div[1]/section/main/section/div/div/div/div[1]/div/div[2]/div/div/div/div/div/div/div[2]/div/div/div[1]/div/div/div/div/div/div/div[3]/div/*[position()=last()-1]'
                     time.sleep(2)
-                    true_sent_message=driver.find_element(By.CSS_SELECTOR,sent_msg_selector)
+                    true_sent_message=driver.find_element(By.XPATH,sent_msg_selector)
+                    to_reply_message='//div/div/div[2]/div/div/div[1]/div[1]/div[1]/section/main/section/div/div/div/div[1]/div/div[2]/div/div/div/div/div/div/div[2]/div/div/div[1]/div/div/div/div/div/div/div[3]/div/*[position()=last()-1]/div/div/div/div/div/*[position()=3]/*[position()=2]/div/div/div/div/div/div/span/div'                            
                     while True:
                         print('entered while')
                         time.sleep(2)
-                        assumed_sent_message=driver.find_element(By.CSS_SELECTOR,sent_msg_selector)
-                        if 299<time.time()-a<301 and assumed_sent_message==true_sent_message:
+                        print('started time:',a,'time now:',time.time())  
+                        assumed_sent_message=WebDriverWait(driver, 20).until(
+                                    EC.presence_of_element_located((By.XPATH,sent_msg_selector))
+                                    )
+                        print('True sent message and actual sent message:',end='')
+                        print(true_sent_message==assumed_sent_message)
+
+                        if 100<time.time()-a<120 and assumed_sent_message==true_sent_message:
                             break
+
                         elif assumed_sent_message!=true_sent_message:
-                            to_reply_message='div > div > div.x9f619.x1n2onr6.x1ja2u2z > div > div > div.x78zum5.xdt5ytf.x1t2pt76.x1n2onr6.x1ja2u2z.x10cihs4 > div.x9f619.xvbhtw8.x78zum5.x168nmei.x13lgxp2.x5pf9jr.xo71vjh.x1uhb9sk.x1plvlek.xryxfnj.x1c4vz4f.x2lah0s.xdt5ytf.xqjyukv.x1qjc9v5.x1oa3qoh.x1qughib > div.x1gryazu.xh8yej3.x10o80wk.x14k21rp.x1v4esvl.x8vgawa > section > main > section > div > div > div > div.xjp7ctv > div > div.x9f619.x1n2onr6.x1ja2u2z.x78zum5.xdt5ytf.x193iq5w.xeuugli.x1r8uery.x1iyjqo2.xs83m0k > div > div > div.x1ja2u2z.x9f619.x78zum5.xdt5ytf.x193iq5w.x1l7klhg.x1iyjqo2.xs83m0k.x2lwn1j.xcrg951.x6prxxf.x6ikm8r.x10wlt62.x1n2onr6.xh8yej3 > div > div > div > div.x1uvtmcs.x4k7w5x.x1h91t0o.x1beo9mf.xaigb6o.x12ejxvf.x3igimt.xarpa2k.xedcshv.x1lytzrv.x1t2pt76.x7ja8zs.x1n2onr6.x1qrby5j.x1jfb8zj > div > div > div.x78zum5.x1r8uery.xdt5ytf.x1iyjqo2.xmz0i5r.x6ikm8r.x10wlt62.x1n2onr6 > div > div > div > div > div > div > div:nth-child(3) > div>div:nth-last-child(2)>div>div>div>div>div>div>div:nth-child(2)>div>div:first-child>div:first-child>div>div>div>span>div'
-                            reply2=reply((driver.find_element(By.CSS_SELECTOR,to_reply_message)).text)   
-                            driver.find_element(By.XPATH,'/html/body/div[2]/div/div/div[2]/div/div/div[1]/div[1]/div[1]/section/main/section/div/div/div/div[1]/div/div[2]/div/div/div/div/div/div/div[2]/div/div/div[2]/div/div/div[2]/div/div[1]/p').send_keys(reply2)
-                            driver.find_element(By.XPATH,'/html/body/div[2]/div/div/div[2]/div/div/div[1]/div[1]/div[1]/section/main/section/div/div/div/div[1]/div/div[2]/div/div/div/div/div/div/div[2]/div/div/div[2]/div/div/div[3]').click()
-                            a=time.time()
-                            true_sent_message=assumed_sent_message
+                            try:
+                                print(f"Waiting for element with selector")
+                                reply2 = WebDriverWait(driver, 20).until(
+                                    EC.presence_of_element_located((By.XPATH,to_reply_message))
+                                    )
+                                print(reply2.text)
+                                reply2=reply(reply2.text)
+                                time.sleep(10)
+                                print(reply2)
+                                driver.find_element(By.XPATH,'/html/body/div[2]/div/div/div[2]/div/div/div[1]/div[1]/div[1]/section/main/section/div/div/div/div[1]/div/div[2]/div/div/div/div/div/div/div[2]/div/div/div[2]/div/div/div[2]/div/div[1]/p').send_keys(remove_non_bmp(reply2))
+                                time.sleep(2)
+                                actionchain.send_keys(Keys.ENTER).perform()
+                                time.sleep(3)
+                                a=time.time()
+                                true_sent_message=WebDriverWait(driver, 20).until(
+                                    EC.presence_of_element_located((By.XPATH,sent_msg_selector))
+                                    )
                                 
+                            except TimeoutException:
+                                print("Element not found within the given time")
+                            except Exception as e:
+                                print(f"Error interacting with the element: {e}")  
+                                 
 
         else:
             print('\n!!! All the messages are read !!!') 
 
 
             
-        break           
+              
 
 
 
